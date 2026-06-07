@@ -1,0 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@layer base { body { @apply bg-canvas text-text-main font-sans antialiased; } h1, h2, h3, h4, h5, h6 { @apply font-display tracking-tight; } }
+@layer components {
+  .btn { @apply inline-flex items-center justify-center px-10 py-5 font-display font-black text-2xl rounded-pill border-[6px] border-surface-highlight transition-all duration-300 transform active:translate-y-2 active:shadow-btn-pressed shadow-btn-heavy; }
+  .btn-primary { @apply bg-primary text-primary-deep hover:bg-primary-container hover:-translate-y-2 hover:shadow-btn-hover; }
+  .btn-secondary { @apply bg-secondary text-secondary-container hover:bg-[#ff8fbf] hover:-translate-y-2 hover:shadow-btn-hover; }
+  .glass-panel { @apply bg-surface-elevated/90 backdrop-blur-xl border-[8px] border-surface-highlight rounded-[3rem] p-12 shadow-island relative overflow-hidden; }
+  .text-outline { -webkit-text-stroke: 3px theme('colors.surface-highlight'); color: transparent; }
+  .text-pulse-glow { @apply animate-pulse-glow; }
+}
