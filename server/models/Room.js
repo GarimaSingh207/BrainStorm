@@ -13,6 +13,5 @@ const RoomSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-RoomSchema.index({ code: 1 });
 RoomSchema.index({ hostId: 1 });
 module.exports = mongoose.model('Room', RoomSchema);
