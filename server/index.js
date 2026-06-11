@@ -15,13 +15,13 @@ const { logger } = require('./utils/logger');
 
 const app = express();
 const httpServer = createServer(app);
-const clientOrigin = process.env.CLIENT_URL || 'http://localhost:3000';
+const clientOrigin = process.env.CLIENT_URL || 'https://brainstormy-xlxy.onrender.com';
 
 const io = new Server(httpServer, {
   cors: { origin: clientOrigin, methods: ['GET', 'POST'], credentials: true },
 });
 
-app.use(cors({ origin: [clientOrigin, 'http://127.0.0.1:3000', 'http://localhost:3000'], credentials: true }));
+app.use(cors({ origin: [clientOrigin, 'http://127.0.0.1:3000', 'http://localhost:3000', 'https://brainstormy-xlxy.onrender.com'], credentials: true }));
 app.use(express.json());
 
 app.use((req, res, next) => {
