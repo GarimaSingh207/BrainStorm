@@ -42,6 +42,10 @@ function registerRoomHandlers(io, socket) {
     }
   });
 
+  socket.on('room:start_countdown', ({ roomCode }) => {
+    io.to(roomCode).emit('room:start_countdown');
+  });
+
   socket.on('disconnect', async () => {
     if (!userId) return;
     try {

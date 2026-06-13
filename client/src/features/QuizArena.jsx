@@ -15,7 +15,7 @@ export default function QuizArena() {
   const [questions, setQuestions] = useState([]);
   const [timerConfig, setTimerConfig] = useState({ mode: 'per_question_fixed', perQuestionSeconds: 15 });
   const [loading, setLoading] = useState(true);
-  const [countdown, setCountdown] = useState(3);
+  const [countdown, setCountdown] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [currentIdx, setCurrentIdx] = useState(0);

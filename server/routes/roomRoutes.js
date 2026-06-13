@@ -69,19 +69,47 @@ router.get('/:code', requireAuth, async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.post('/:code/upload', upload.array('files'), async (req, res, next) => {
+router.post('/:code/upload_files', upload.array('files'), async (req, res, next) => {
   try {
     const { code } = req.params;
-    const { topicName } = req.body;
     const files = req.files;
     const room = await Room.findOne({ code: code.toUpperCase() });
     if (!room) return res.status(404).json({ error: 'Room not found' });
     if (!files || files.length === 0) return res.status(400).json({ error: 'No files uploaded' });
-    let fullText = '';
-    for (const file of files) { fullText += `\n\n[File: ${file.originalname}]\n` + file.buffer.toString('utf-8').slice(0, 5000); }
-    const chunks = chunkText(fullText);
+    
+    let additionalText = '';
+    for (const file of files) { 
+      additionalText += `\n\n[File: ${file.originalname}]\n` + file.buffer.toString('utf-8').slice(0, 5000); 
+    }
+    
+    let mergedContext = await MergedContext.findOne({ roomId: room._id });
+    if (!mergedContext) {
+      mergedContext = await MergedContext.create({ roomId: room._id, content: additionalText, status: 'Merging', tokenCount: additionalText.split(/\s+/).length });
+    } else {
+      mergedContext.content += additionalText;
+      mergedContext.tokenCount = mergedContext.content.split(/\s+/).length;
+      await mergedContext.save();
+    }
+    res.status(200).json({ message: 'Files added successfully' });
+  } catch (error) { next(error); }
+});
+
+router.post('/:code/upload', async (req, res, next) => {
+  try {
+    const { code } = req.params;
+    const { topicName } = req.body;
+    const room = await Room.findOne({ code: code.toUpperCase() });
+    if (!room) return res.status(404).json({ error: 'Room not found' });
+    
+    let mergedContext = await MergedContext.findOne({ roomId: room._id });
+    if (!mergedContext || !mergedContext.content) {
+      return res.status(400).json({ error: 'No uploaded materials found for this room' });
+    }
+    
+    const chunks = chunkText(mergedContext.content);
     let selectedChunksText = '';
     let wikipediaContext = '';
+    
     if (topicName && topicName.trim()) {
       const relevant = retrieveRelevantChunks(chunks, topicName);
       selectedChunksText = relevant.map(r => r.text).join('\n\n');
@@ -96,8 +124,13 @@ router.post('/:code/upload', upload.array('files'), async (req, res, next) => {
     } else {
       selectedChunksText = chunks.slice(0, 5).join('\n\n');
     }
-    await MergedContext.deleteOne({ roomId: room._id });
-    const mergedContext = await MergedContext.create({ roomId: room._id, content: selectedChunksText, status: 'Completed', tokenCount: selectedChunksText.split(/\s+/).length, topicName: topicName?.trim() || '' });
+    
+    mergedContext.content = selectedChunksText;
+    mergedContext.status = 'Completed';
+    mergedContext.topicName = topicName?.trim() || '';
+    mergedContext.tokenCount = selectedChunksText.split(/\s+/).length;
+    await mergedContext.save();
+    
     room.status = 'Generating';
     await room.save();
     res.status(200).json({ message: 'Materials refined', mergedContextId: mergedContext._id, retrievedPreview: selectedChunksText.slice(0, 1000), wikipediaFetched: !!wikipediaContext });
